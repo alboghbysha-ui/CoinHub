@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>My Mini App</title>
+    <title>CoinHub - Earn Coins</title>
+    <!-- مرحله 1: لود کردن SDK AdsGram در هدر - طبق مستندات -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         * {
@@ -70,6 +71,11 @@
         .reward-btn:active {
             transform: scale(0.98);
         }
+        .reward-btn:disabled {
+            opacity: 0.6;
+            transform: none;
+            cursor: not-allowed;
+        }
         .feature-list {
             text-align: left;
             margin: 24px 0;
@@ -95,11 +101,25 @@
             font-size: 11px;
             color: #aaa;
         }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>✨ My Mini App</h1>
+        <h1>✨ CoinHub</h1>
         <div class="subtitle">Watch ads and earn coins!</div>
         
         <div class="coin-display">
@@ -118,12 +138,14 @@
     </div>
 
     <script>
-        // -------- Configuration --------
-        const BLOCK_ID = "YOUR_BLOCK_ID_HERE";  
+        // -------- تنظیمات --------
+        const BLOCK_ID = "34886";  // Block ID شما
         
-        // -------- Coin management --------
+        // -------- مدیریت سکه --------
         let coinBalance = 0;
         const coinElement = document.getElementById('coinCount');
+        const rewardBtn = document.getElementById('rewardBtn');
+        let isAdLoading = false;
         
         function updateCoinDisplay() {
             coinElement.innerText = coinBalance;
@@ -133,52 +155,92 @@
         function addCoins(amount) {
             coinBalance += amount;
             updateCoinDisplay();
+            // نمایش اعلان موفقیت
+            if (window.Tel eg Telegram && Telegram.WebView) {
+                Telegram.WebView.showPopup({
+                    title: '🎉 Congratulations!',
+                    message: `You earned ${amount} coins!`,
+                    buttons: [{type: 'ok'}]
+                });
+            } else {
+                alert(`🎉 Congratulations! You earned ${amount} coins!`);
+            }
         }
         
-        // Load saved coins
+        // بارگذاری سکه‌های ذخیره شده
         const savedBalance = localStorage.getItem('coinBalance');
         if (savedBalance !== null) {
             coinBalance = parseInt(savedBalance) || 0;
             updateCoinDisplay();
         }
         
-        // -------- Show rewarded ad (AdsGram) --------
+        // -------- راه‌اندازی AdsGram طبق مستندات رسمی --------
+        let AdController = null;
+        
+        try {
+            // مرحله 2: راه‌اندازی (Initialize) AdsGram SDK با blockId
+            AdController = window.Adsgram.init({ 
+                blockId: BLOCK_ID 
+            });
+            console.log("AdsGram initialized successfully with blockId:", BLOCK_ID);
+        } catch (error) {
+            console.error("Failed to initialize AdsGram:", error);
+        }
+        
+        // -------- تابع نمایش تبلیغ پاداشی (طبق مستندات) --------
         async function showRewardedAd() {
-            if (typeof Adsgram === 'undefined') {
-                console.log("AdsGram SDK not loaded");
-                alert("Connecting to ad server... Please try again");
+            // بررسی اینکه AdController آماده باشد
+            if (!AdController) {
+                alert("Ad service is not ready. Please try again.");
                 return;
             }
             
+            // جلوگیری از کلیک همزمان
+            if (isAdLoading) {
+                return;
+            }
+            
+            isAdLoading = true;
+            rewardBtn.disabled = true;
+            
+            // تغییر متن دکمه به حالت بارگذاری
+            const originalText = rewardBtn.innerHTML;
+            rewardBtn.innerHTML = "⏳ Loading ad...";
+            
             try {
-                const adController = new Adsgram({
-                    blockId: BLOCK_ID
-                });
+                // مرحله 3: نمایش تبلیغ با متد show() طبق مستندات
+                // promise resolved when user watches ad till the end
+                const result = await AdController.show();
                 
-                const result = await adController.show();
-                
-                if (result === 'reward') {
+                // بررسی نتیجه طبق مستندات
+                // result دارای properties: done, description, state, error
+                if (result && !result.error && result.done === true) {
+                    // کاربر تبلیغ را تا انتها دید - جایزه بده
                     addCoins(5);
-                    if (window.Telegram && Telegram.WebView) {
-                        Telegram.WebView.showPopup({
-                            title: '🎉 Congratulations!',
-                            message: 'You earned 5 coins!',
-                            buttons: [{type: 'ok'}]
-                        });
-                    } else {
-                        alert('🎉 Congratulations! You earned 5 coins!');
-                    }
+                } else if (result && result.error) {
+                    // خطایی رخ داده
+                    console.log("Ad error:", result.description);
+                    alert("Failed to load ad. Please try again.");
                 }
+                // اگر result.error نبود ولی done هم false بود، یعنی کاربر تبلیغ را کامل ندید (در فرمت interstitial ممکن است)
+                // در فرمت rewarded، only resolved when watched till the end
+                
             } catch (error) {
-                console.log('Ad error:', error);
-                if (error && error.message !== 'aborted') {
-                    console.log('Unexpected error:', error);
+                // کاربر خطا دریافت کرد (طبق مستندات، catch میشود)
+                console.log("Ad show error:", error);
+                // هیچ کاری نکن یا پیام بده
+                if (error && error.description) {
+                    console.log("Error description:", error.description);
                 }
+            } finally {
+                // بازنشانی دکمه
+                isAdLoading = false;
+                rewardBtn.disabled = false;
+                rewardBtn.innerHTML = originalText;
             }
         }
         
-        // -------- Connect button --------
-        const rewardBtn = document.getElementById('rewardBtn');
+        // اتصال دکمه به تابع نمایش تبلیغ
         rewardBtn.addEventListener('click', showRewardedAd);
         
         console.log("Mini App is ready! Block ID:", BLOCK_ID);
