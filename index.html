@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CoinHub - Earn Coins</title>
-    <!-- مرحله 1: لود کردن SDK AdsGram در هدر - طبق مستندات -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
         * {
@@ -101,20 +100,6 @@
             font-size: 11px;
             color: #aaa;
         }
-        .loading {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid white;
-            border-top-color: transparent;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
     </style>
 </head>
 <body>
@@ -138,10 +123,10 @@
     </div>
 
     <script>
-        // -------- تنظیمات --------
-        const BLOCK_ID = "34886";  // Block ID شما
+        // CONFIGURATION - Your Block ID
+        const BLOCK_ID = "34893";
         
-        // -------- مدیریت سکه --------
+        // Coin management
         let coinBalance = 0;
         const coinElement = document.getElementById('coinCount');
         const rewardBtn = document.getElementById('rewardBtn');
@@ -155,8 +140,7 @@
         function addCoins(amount) {
             coinBalance += amount;
             updateCoinDisplay();
-            // نمایش اعلان موفقیت
-            if (window.Tel eg Telegram && Telegram.WebView) {
+            if (window.Telegram && Telegram.WebView) {
                 Telegram.WebView.showPopup({
                     title: '🎉 Congratulations!',
                     message: `You earned ${amount} coins!`,
@@ -167,35 +151,32 @@
             }
         }
         
-        // بارگذاری سکه‌های ذخیره شده
+        // Load saved coins
         const savedBalance = localStorage.getItem('coinBalance');
         if (savedBalance !== null) {
             coinBalance = parseInt(savedBalance) || 0;
             updateCoinDisplay();
         }
         
-        // -------- راه‌اندازی AdsGram طبق مستندات رسمی --------
+        // Initialize AdsGram SDK
         let AdController = null;
         
         try {
-            // مرحله 2: راه‌اندازی (Initialize) AdsGram SDK با blockId
             AdController = window.Adsgram.init({ 
                 blockId: BLOCK_ID 
             });
-            console.log("AdsGram initialized successfully with blockId:", BLOCK_ID);
+            console.log("AdsGram initialized with blockId:", BLOCK_ID);
         } catch (error) {
             console.error("Failed to initialize AdsGram:", error);
         }
         
-        // -------- تابع نمایش تبلیغ پاداشی (طبق مستندات) --------
+        // Show rewarded ad
         async function showRewardedAd() {
-            // بررسی اینکه AdController آماده باشد
             if (!AdController) {
                 alert("Ad service is not ready. Please try again.");
                 return;
             }
             
-            // جلوگیری از کلیک همزمان
             if (isAdLoading) {
                 return;
             }
@@ -203,47 +184,30 @@
             isAdLoading = true;
             rewardBtn.disabled = true;
             
-            // تغییر متن دکمه به حالت بارگذاری
             const originalText = rewardBtn.innerHTML;
             rewardBtn.innerHTML = "⏳ Loading ad...";
             
             try {
-                // مرحله 3: نمایش تبلیغ با متد show() طبق مستندات
-                // promise resolved when user watches ad till the end
                 const result = await AdController.show();
                 
-                // بررسی نتیجه طبق مستندات
-                // result دارای properties: done, description, state, error
                 if (result && !result.error && result.done === true) {
-                    // کاربر تبلیغ را تا انتها دید - جایزه بده
                     addCoins(5);
                 } else if (result && result.error) {
-                    // خطایی رخ داده
                     console.log("Ad error:", result.description);
                     alert("Failed to load ad. Please try again.");
                 }
-                // اگر result.error نبود ولی done هم false بود، یعنی کاربر تبلیغ را کامل ندید (در فرمت interstitial ممکن است)
-                // در فرمت rewarded، only resolved when watched till the end
-                
             } catch (error) {
-                // کاربر خطا دریافت کرد (طبق مستندات، catch میشود)
                 console.log("Ad show error:", error);
-                // هیچ کاری نکن یا پیام بده
-                if (error && error.description) {
-                    console.log("Error description:", error.description);
-                }
             } finally {
-                // بازنشانی دکمه
                 isAdLoading = false;
                 rewardBtn.disabled = false;
                 rewardBtn.innerHTML = originalText;
             }
         }
         
-        // اتصال دکمه به تابع نمایش تبلیغ
         rewardBtn.addEventListener('click', showRewardedAd);
         
-        console.log("Mini App is ready! Block ID:", BLOCK_ID);
+        console.log("Mini App ready! Block ID:", BLOCK_ID);
     </script>
 </body>
 </html>
