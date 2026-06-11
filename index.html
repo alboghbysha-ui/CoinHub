@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>My Mini App</title>
+    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 32px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 24px;
+            font-size: 14px;
+        }
+        .coin-display {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+            border-radius: 60px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+        .coin-count {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+        }
+        .coin-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+        }
+        .reward-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 60px;
+            padding: 16px 32px;
+            width: 100%;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 16px;
+        }
+        .reward-btn:active {
+            transform: scale(0.98);
+        }
+        .feature-list {
+            text-align: left;
+            margin: 24px 0;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 20px;
+        }
+        .feature-item {
+            padding: 8px 0;
+            color: #555;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .feature-item:before {
+            content: "✓";
+            color: #4caf50;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 11px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✨ My Mini App</h1>
+        <div class="subtitle">Watch ads and earn coins!</div>
+        
+        <div class="coin-display">
+            <div class="coin-count" id="coinCount">0</div>
+            <div class="coin-label">My Coins</div>
+        </div>
+        
+        <button class="reward-btn" id="rewardBtn">🎬 Watch video & earn 5 coins</button>
+        
+        <div class="feature-list">
+            <div class="feature-item">All main features are completely free</div>
+            <div class="feature-item">Watch ads only to earn bonus coins</div>
+            <div class="feature-item">No forced ads, you are in control</div>
+        </div>
+        <div class="footer">Ads by AdsGram</div>
+    </div>
+
+    <script>
+        // -------- Configuration --------
+        const BLOCK_ID = "YOUR_BLOCK_ID_HERE";  
+        
+        // -------- Coin management --------
+        let coinBalance = 0;
+        const coinElement = document.getElementById('coinCount');
+        
+        function updateCoinDisplay() {
+            coinElement.innerText = coinBalance;
+            localStorage.setItem('coinBalance', coinBalance);
+        }
+        
+        function addCoins(amount) {
+            coinBalance += amount;
+            updateCoinDisplay();
+        }
+        
+        // Load saved coins
+        const savedBalance = localStorage.getItem('coinBalance');
+        if (savedBalance !== null) {
+            coinBalance = parseInt(savedBalance) || 0;
+            updateCoinDisplay();
+        }
+        
+        // -------- Show rewarded ad (AdsGram) --------
+        async function showRewardedAd() {
+            if (typeof Adsgram === 'undefined') {
+                console.log("AdsGram SDK not loaded");
+                alert("Connecting to ad server... Please try again");
+                return;
+            }
+            
+            try {
+                const adController = new Adsgram({
+                    blockId: BLOCK_ID
+                });
+                
+                const result = await adController.show();
+                
+                if (result === 'reward') {
+                    addCoins(5);
+                    if (window.Telegram && Telegram.WebView) {
+                        Telegram.WebView.showPopup({
+                            title: '🎉 Congratulations!',
+                            message: 'You earned 5 coins!',
+                            buttons: [{type: 'ok'}]
+                        });
+                    } else {
+                        alert('🎉 Congratulations! You earned 5 coins!');
+                    }
+                }
+            } catch (error) {
+                console.log('Ad error:', error);
+                if (error && error.message !== 'aborted') {
+                    console.log('Unexpected error:', error);
+                }
+            }
+        }
+        
+        // -------- Connect button --------
+        const rewardBtn = document.getElementById('rewardBtn');
+        rewardBtn.addEventListener('click', showRewardedAd);
+        
+        console.log("Mini App is ready! Block ID:", BLOCK_ID);
+    </script>
+</body>
+</html>
