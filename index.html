@@ -1,213 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>CoinHub - Earn Coins</title>
-    <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 16px;
-        }
-        .container {
-            background: rgba(255,255,255,0.95);
-            border-radius: 32px;
-            padding: 24px;
-            max-width: 400px;
-            width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            text-align: center;
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 28px;
-        }
-        .subtitle {
-            color: #666;
-            margin-bottom: 24px;
-            font-size: 14px;
-        }
-        .coin-display {
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            border-radius: 60px;
-            padding: 20px;
-            margin-bottom: 32px;
-        }
-        .coin-count {
-            font-size: 48px;
-            font-weight: bold;
-            color: #fff;
-        }
-        .coin-label {
-            color: rgba(255,255,255,0.9);
-            font-size: 14px;
-        }
-        .reward-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 60px;
-            padding: 16px 32px;
-            width: 100%;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-bottom: 16px;
-        }
-        .reward-btn:active {
-            transform: scale(0.98);
-        }
-        .reward-btn:disabled {
-            opacity: 0.6;
-            transform: none;
-            cursor: not-allowed;
-        }
-        .feature-list {
-            text-align: left;
-            margin: 24px 0;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 20px;
-        }
-        .feature-item {
-            padding: 8px 0;
-            color: #555;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .feature-item:before {
-            content: "✓";
-            color: #4caf50;
-            font-weight: bold;
-        }
-        .footer {
-            margin-top: 20px;
-            font-size: 11px;
-            color: #aaa;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CoinTap</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Replace XXX with your Monetag Zone ID -->
+  <script src='//libtl.com/sdk.js' data-zone='11141415' data-sdk='show_11141415'></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    :root {
+      --bg:#0a0a0f; --surface:#13131e; --border:#1e1e30;
+      --gold:#f5c842; --gold2:#e8a020; --text:#f0f0f8;
+      --muted:#6060a0; --green:#3dd68c; --red:#ff5a5a; --radius:18px;
+    }
+    body {
+      font-family:'Space Grotesk',sans-serif;
+      background:var(--bg); color:var(--text);
+      min-height:100vh; display:flex; flex-direction:column;
+      padding:16px 16px 24px; overflow-x:hidden; user-select:none;
+    }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
+    .game-title {
+      font-size:20px; font-weight:800; letter-spacing:-0.5px;
+      background:linear-gradient(90deg,var(--gold),var(--gold2));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .level-badge {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:30px; padding:4px 12px; font-size:12px; color:var(--muted); font-weight:600;
+    }
+    .level-badge span { color:var(--gold); }
+    .stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:18px; }
+    .stat { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:12px 10px; text-align:center; }
+    .stat .val { font-size:18px; font-weight:800; color:var(--gold); line-height:1; }
+    .stat .lbl { font-size:10px; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:.6px; }
+    .energy-wrap { margin-bottom:18px; }
+    .energy-top { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    .energy-top span { color:var(--green); font-weight:700; }
+    .energy-bar { width:100%; height:8px; background:var(--surface); border-radius:99px; overflow:hidden; }
+    .energy-fill { height:100%; background:linear-gradient(90deg,var(--green),#6cf0b0); border-radius:99px; transition:width .3s ease; }
+    .coin-area { flex:1; display:flex; align-items:center; justify-content:center; margin-bottom:18px; min-height:200px; }
+    .coin-btn {
+      width:180px; height:180px; border-radius:50%;
+      background:radial-gradient(circle at 35% 35%,#ffe066,#f5c842 50%,#c8860a);
+      border:none; cursor:pointer; position:relative;
+      box-shadow:0 0 0 8px rgba(245,200,66,.1),0 0 0 16px rgba(245,200,66,.05),0 12px 40px rgba(245,200,66,.3);
+      transition:transform .08s ease,box-shadow .08s ease;
+      display:flex; align-items:center; justify-content:center; font-size:72px;
+    }
+    .coin-btn:active { transform:scale(0.93); box-shadow:0 0 0 4px rgba(245,200,66,.08),0 6px 20px rgba(245,200,66,.2); }
+    .coin-btn.disabled { filter:grayscale(1); opacity:.5; cursor:not-allowed; }
+    .float-plus {
+      position:fixed; font-size:22px; font-weight:800; color:var(--gold);
+      pointer-events:none; animation:floatUp .8s ease forwards; z-index:99;
+      text-shadow:0 2px 8px rgba(0,0,0,.5);
+    }
+    @keyframes floatUp {
+      0%   { opacity:1; transform:translateY(0) scale(1); }
+      100% { opacity:0; transform:translateY(-70px) scale(1.3); }
+    }
+    .boost-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
+    .boost-card h3 { font-size:13px; font-weight:700; margin-bottom:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; }
+    .boost-row { display:flex; gap:8px; }
+    .boost-btn {
+      flex:1; border:none; border-radius:12px; padding:12px 8px;
+      font-family:inherit; font-size:13px; font-weight:700; cursor:pointer;
+      display:flex; flex-direction:column; align-items:center; gap:4px;
+      transition:opacity .15s,transform .1s;
+    }
+    .boost-btn:active { transform:scale(0.96); opacity:.85; }
+    .boost-btn:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+    .boost-btn .ico { font-size:22px; }
+    .boost-btn.ad-btn { background:linear-gradient(135deg,#6c4ef2,#8b6af5); color:#fff; }
+    .boost-btn.energy-btn { background:linear-gradient(135deg,#1a3a2a,#1e4a32); border:1px solid #2a6040; color:var(--green); }
+    .boost-btn .sub { font-size:10px; opacity:.7; font-weight:400; }
+    .lb-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+    .lb-card h3 { font-size:13px; font-weight:700; margin-bottom:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; }
+    .lb-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid var(--border); }
+    .lb-row:last-child { border-bottom:none; padding-bottom:0; }
+    .lb-rank { font-size:14px; font-weight:800; width:24px; text-align:center; }
+    .lb-rank.gold { color:#f5c842; } .lb-rank.silver { color:#aaa; } .lb-rank.bronze { color:#cd7f32; }
+    .lb-name { flex:1; font-size:13px; font-weight:600; }
+    .lb-score { font-size:13px; color:var(--gold); font-weight:700; }
+    .toast {
+      position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(10px);
+      background:#1a2a1a; border:1px solid var(--green); color:var(--green);
+      padding:10px 20px; border-radius:30px; font-size:13px; font-weight:700;
+      opacity:0; transition:all .25s; pointer-events:none; white-space:nowrap; z-index:200;
+    }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .toast.error { background:#2a1a1a; border-color:var(--red); color:var(--red); }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>✨ CoinHub</h1>
-        <div class="subtitle">Watch ads and earn coins!</div>
-        
-        <div class="coin-display">
-            <div class="coin-count" id="coinCount">0</div>
-            <div class="coin-label">My Coins</div>
-        </div>
-        
-        <button class="reward-btn" id="rewardBtn">🎬 Watch video & earn 5 coins</button>
-        
-        <div class="feature-list">
-            <div class="feature-item">All main features are completely free</div>
-            <div class="feature-item">Watch ads only to earn bonus coins</div>
-            <div class="feature-item">No forced ads, you are in control</div>
-        </div>
-        <div class="footer">Ads by AdsGram</div>
-    </div>
 
-    <script>
-        // CONFIGURATION - Your Block ID
-        const BLOCK_ID = "34893";
-        
-        // Coin management
-        let coinBalance = 0;
-        const coinElement = document.getElementById('coinCount');
-        const rewardBtn = document.getElementById('rewardBtn');
-        let isAdLoading = false;
-        
-        function updateCoinDisplay() {
-            coinElement.innerText = coinBalance;
-            localStorage.setItem('coinBalance', coinBalance);
-        }
-        
-        function addCoins(amount) {
-            coinBalance += amount;
-            updateCoinDisplay();
-            if (window.Telegram && Telegram.WebView) {
-                Telegram.WebView.showPopup({
-                    title: '🎉 Congratulations!',
-                    message: `You earned ${amount} coins!`,
-                    buttons: [{type: 'ok'}]
-                });
-            } else {
-                alert(`🎉 Congratulations! You earned ${amount} coins!`);
-            }
-        }
-        
-        // Load saved coins
-        const savedBalance = localStorage.getItem('coinBalance');
-        if (savedBalance !== null) {
-            coinBalance = parseInt(savedBalance) || 0;
-            updateCoinDisplay();
-        }
-        
-        // Initialize AdsGram SDK
-        let AdController = null;
-        
-        try {
-            AdController = window.Adsgram.init({ 
-                blockId: BLOCK_ID 
-            });
-            console.log("AdsGram initialized with blockId:", BLOCK_ID);
-        } catch (error) {
-            console.error("Failed to initialize AdsGram:", error);
-        }
-        
-        // Show rewarded ad
-        async function showRewardedAd() {
-            if (!AdController) {
-                alert("Ad service is not ready. Please try again.");
-                return;
-            }
-            
-            if (isAdLoading) {
-                return;
-            }
-            
-            isAdLoading = true;
-            rewardBtn.disabled = true;
-            
-            const originalText = rewardBtn.innerHTML;
-            rewardBtn.innerHTML = "⏳ Loading ad...";
-            
-            try {
-                const result = await AdController.show();
-                
-                if (result && !result.error && result.done === true) {
-                    addCoins(5);
-                } else if (result && result.error) {
-                    console.log("Ad error:", result.description);
-                    alert("Failed to load ad. Please try again.");
-                }
-            } catch (error) {
-                console.log("Ad show error:", error);
-            } finally {
-                isAdLoading = false;
-                rewardBtn.disabled = false;
-                rewardBtn.innerHTML = originalText;
-            }
-        }
-        
-        rewardBtn.addEventListener('click', showRewardedAd);
-        
-        console.log("Mini App ready! Block ID:", BLOCK_ID);
-    </script>
+  <div class="topbar">
+    <div class="game-title">🪙 CoinTap</div>
+    <div class="level-badge">Level <span id="level-display">1</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="val" id="coins-display">0</div><div class="lbl">Coins</div></div>
+    <div class="stat"><div class="val" id="taps-display">0</div><div class="lbl">Taps</div></div>
+    <div class="stat"><div class="val" id="mult-display">×1</div><div class="lbl">Multiplier</div></div>
+  </div>
+
+  <div class="energy-wrap">
+    <div class="energy-top"><span>⚡ Energy</span><span id="energy-text">100 / 100</span></div>
+    <div class="energy-bar"><div class="energy-fill" id="energy-fill" style="width:100%"></div></div>
+  </div>
+
+  <div class="coin-area">
+    <button class="coin-btn" id="coin-btn" onclick="tap(event)">🪙</button>
+  </div>
+
+  <div class="boost-card">
+    <h3>⚡ Boosts</h3>
+    <div class="boost-row">
+      <button class="boost-btn ad-btn" id="ad-btn" onclick="watchAd()">
+        <span class="ico">🎬</span>Watch Ad<span class="sub">×3 for 30s</span>
+      </button>
+      <button class="boost-btn energy-btn" id="refill-btn" onclick="refillEnergy()">
+        <span class="ico">🔋</span>Refill<span class="sub" id="refill-cost">500 coins</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="lb-card">
+    <h3>🏆 Top Players</h3>
+    <div class="lb-row"><div class="lb-rank gold">1</div><div class="lb-name">CryptoKing</div><div class="lb-score" id="lb1">—</div></div>
+    <div class="lb-row"><div class="lb-rank silver">2</div><div class="lb-name">TapMaster</div><div class="lb-score" id="lb2">—</div></div>
+    <div class="lb-row"><div class="lb-rank bronze">3</div><div class="lb-name">You</div><div class="lb-score" id="lb3">0</div></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const tg = window.Telegram?.WebApp;
+    if (tg) { tg.ready(); tg.expand(); }
+
+    let coins=0, taps=0, multiplier=1;
+    let energy=100, maxEnergy=100, level=1;
+    let boostTimer=null, refillCost=500;
+
+    document.getElementById('lb1').textContent = fmt(85000 + Math.floor(Math.random()*15000));
+    document.getElementById('lb2').textContent = fmt(42000 + Math.floor(Math.random()*10000));
+
+    function fmt(n) {
+      if (n>=1000000) return (n/1000000).toFixed(1)+'M';
+      if (n>=1000) return (n/1000).toFixed(1)+'K';
+      return n.toString();
+    }
+
+    function updateUI() {
+      document.getElementById('coins-display').textContent = fmt(coins);
+      document.getElementById('taps-display').textContent  = fmt(taps);
+      document.getElementById('mult-display').textContent  = '×'+multiplier;
+      document.getElementById('level-display').textContent = level;
+      document.getElementById('energy-text').textContent   = energy+' / '+maxEnergy;
+      document.getElementById('energy-fill').style.width   = (energy/maxEnergy*100)+'%';
+      document.getElementById('lb3').textContent           = fmt(coins);
+      document.getElementById('refill-cost').textContent   = fmt(refillCost)+' coins';
+      document.getElementById('coin-btn').classList.toggle('disabled', energy<=0);
+    }
+
+    function tap(e) {
+      if (energy<=0) { showToast('No energy! Refill or watch an ad', true); return; }
+      energy = Math.max(0, energy-1);
+      coins += multiplier;
+      taps++;
+      if (taps % 1000 === 0) {
+        level++; maxEnergy+=20; energy=maxEnergy;
+        showToast('Level '+level+'! Max energy increased!');
+      }
+      updateUI();
+      spawnFloat(e);
+    }
+
+    function spawnFloat(e) {
+      const el = document.createElement('div');
+      el.className = 'float-plus';
+      el.textContent = '+'+multiplier;
+      const r = document.getElementById('coin-btn').getBoundingClientRect();
+      el.style.left = (r.left + r.width/2 - 15 + (Math.random()-.5)*40)+'px';
+      el.style.top  = (r.top  + r.height/2 - 20)+'px';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 800);
+    }
+
+    function refillEnergy() {
+      if (coins < refillCost) { showToast('Not enough coins!', true); return; }
+      coins -= refillCost;
+      energy = maxEnergy;
+      refillCost = Math.floor(refillCost * 1.5);
+      showToast('Energy refilled!');
+      updateUI();
+    }
+
+    function watchAd() {
+      const btn = document.getElementById('ad-btn');
+      btn.disabled = true;
+      btn.querySelector('.ico').textContent = '⏳';
+
+      // Monetag SDK — replace show_XXX with your actual function from dashboard
+      const showFn = window['show_11141415'];
+      if (typeof showFn !== 'function') {
+        showToast('Ad not available right now', true);
+        btn.disabled = false;
+        btn.querySelector('.ico').textContent = '🎬';
+        return;
+      }
+
+      showFn().then(() => {
+        multiplier = 3;
+        energy = maxEnergy;
+        showToast('x3 boost active for 30 seconds!');
+        btn.querySelector('.ico').textContent = '✅';
+        clearTimeout(boostTimer);
+        boostTimer = setTimeout(() => {
+          multiplier = 1;
+          btn.disabled = false;
+          btn.querySelector('.ico').textContent = '🎬';
+          showToast('Boost ended');
+          updateUI();
+        }, 30000);
+        updateUI();
+      }).catch(() => {
+        showToast('No ad available, try again', true);
+        btn.disabled = false;
+        btn.querySelector('.ico').textContent = '🎬';
+      });
+    }
+
+    // Energy regen: +1 every 3s
+    setInterval(() => {
+      if (energy < maxEnergy) { energy = Math.min(maxEnergy, energy+1); updateUI(); }
+    }, 3000);
+
+    function showToast(msg, isError=false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show'+(isError?' error':'');
+      setTimeout(()=>t.className='toast', 2500);
+    }
+
+    updateUI();
+  </script>
 </body>
 </html>
